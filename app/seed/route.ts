@@ -2,7 +2,33 @@ import bcrypt from 'bcrypt';
 import postgres from 'postgres';
 import { invoices, customers, revenue, users } from '../lib/placeholder-data';
 
+// Debuggindg connection issues with postgres in production can be tricky, so we log the connection string here to verify it's correct.
+// import { NextResponse } from 'next/server';
+
+// export async function GET() {
+//   try {
+//     console.log('Processing /seed route...');
+//     // Add your seed logic here
+//     return NextResponse.json({ message: 'Seed data processed successfully' });
+//   } catch (error) {
+//     console.error('Error in /seed route:', error);
+//     return NextResponse.json({ error: 'An error occurred while processing seed data' }, { status: 500 });
+//   }
+// }
+
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+// const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+
+// async function testConnection() {
+//   try {
+//     await sql`SELECT 1`;
+//     console.log('Database connection successful');
+//   } catch (error) {
+//     console.error('Database connection failed:', error);
+//   }
+// }
+
+// testConnection();
 
 async function seedUsers() {
   await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
@@ -104,9 +130,13 @@ async function seedRevenue() {
 export async function GET() {
   try {
     const result = await sql.begin((sql) => [
+      console.log('Seeding users...'),
       seedUsers(),
+      console.log('Seeding customers...'),
       seedCustomers(),
+      console.log('Seeding invoices...'),
       seedInvoices(),
+      console.log('Seeding revenue...'),
       seedRevenue(),
     ]);
 
